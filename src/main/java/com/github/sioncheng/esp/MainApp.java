@@ -2,6 +2,7 @@ package com.github.sioncheng.esp;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -20,7 +21,12 @@ public class MainApp {
 
         createClient();
 
-        createIndex("secisland", "secilog");
+        final String name = "secisland";
+        final String type = "secilog";
+
+        createIndex(name, type);
+
+        insertDoc(name, type);
 
         client.close();
     }
@@ -43,7 +49,7 @@ public class MainApp {
         return client;
     }
 
-    static void createIndex(String type, String indexName) throws IOException {
+    static void createIndex(String indexName, String type) throws IOException {
         XContentBuilder mapping = XContentFactory.jsonBuilder()
                 .startObject()
                     .startObject("settings")
@@ -76,6 +82,14 @@ public class MainApp {
         } else {
             System.out.println("index creation failed.");
         }
+    }
+
+    static void insertDoc(String indexName, String type) throws IOException {
+        XContentBuilder doc = XContentFactory.jsonBuilder().startObject().field("","").endObject();
+        IndexResponse response = client.prepareIndex(indexName, type, "1")
+                .setSource(doc).get();
+
+        System.out.println(String.format("index: %s insert doc id: %s", response.getIndex(), response.getId()));
     }
 
     private static Client client;
