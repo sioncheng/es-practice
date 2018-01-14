@@ -13,11 +13,14 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.get.GetField;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class MainApp {
@@ -30,7 +33,9 @@ public class MainApp {
         final String name = "secisland";
         final String type = "secilog";
 
-        if ("createIndex".equalsIgnoreCase(args[0])) {
+        if (args.length == 0) {
+            usage();
+        } else if ("createIndex".equalsIgnoreCase(args[0])) {
             createIndex(name, type);
         } else if ("insertDoc".equalsIgnoreCase(args[0])) {
             insertDoc(name, type);
@@ -138,8 +143,14 @@ public class MainApp {
         String type = response.getType();
         String id = response.getId();
 
+
         System.out.println(String.format("source %s version %d indexName %s type %s id %s"
                 , source, version, indexName, type, id));
+
+        for (Map.Entry<String, GetField> kv :
+                response.getFields().entrySet()) {
+            System.out.println(String.format("%s %s", kv.getKey(), kv.getValue().getValue()));
+        }
     }
 
     static void deleteDoc() {
@@ -148,6 +159,10 @@ public class MainApp {
 
     }
 
+
+    static void usage() {
+        System.out.println("createIndex | searchDoc | insertDoc | updateDoc | deleteDoc");
+    }
 
     private static Client client;
 
